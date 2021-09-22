@@ -157,5 +157,4 @@ public class SettingScripts : MonoBehaviour
 
         PlayerPrefs.SetInt("OmokVibe", this.omokVibe);
     }
- 
 }

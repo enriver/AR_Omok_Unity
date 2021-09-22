@@ -7,21 +7,21 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 public class Omok {
-    bool[,] board;
+    int[,] board;
     int currentTurn;
 
         public Omok()
     {
         this.currentTurn = 1;
-        this.board = new bool[9,9] {{ false, false, false, false, false, false, false, false, false },
-                                    { false, false, false, false, false, false, false, false, false },
-                                    { false, false, false, false, false, false, false, false, false },
-                                    { false, false, false, false, false, false, false, false, false },
-                                    { false, false, false, false, false, false, false, false, false },
-                                    { false, false, false, false, false, false, false, false, false },
-                                    { false, false, false, false, false, false, false, false, false },
-                                    { false, false, false, false, false, false, false, false, false },
-                                    { false, false, false, false, false, false, false, false, false }};
+        this.board = new int[9,9] { {0,0,0,0,0,0,0,0,0},
+                                    {0,0,0,0,0,0,0,0,0},
+                                    {0,0,0,0,0,0,0,0,0},
+                                    {0,0,0,0,0,0,0,0,0},
+                                    {0,0,0,0,0,0,0,0,0},
+                                    {0,0,0,0,0,0,0,0,0},
+                                    {0,0,0,0,0,0,0,0,0},
+                                    {0,0,0,0,0,0,0,0,0},
+                                    {0,0,0,0,0,0,0,0,0}};
     }
     
     public int getCurrentTurn()
@@ -51,6 +51,7 @@ public class GameDirector : MonoBehaviour
     float time;
     bool isSet;
     bool isGameStart;
+    bool setOmokStone;
 
     private ARRaycastManager raycastManager;
     public GameObject OmokStoneWhite;
@@ -68,6 +69,8 @@ public class GameDirector : MonoBehaviour
         this.time = PlayerPrefs.GetFloat("Time");
         this.isSet = false;
         this.isGameStart = false;
+        this.setOmokStone = false;
+ 
         this.raycastManager = FindObjectOfType<ARRaycastManager>();
     }
 
@@ -83,7 +86,6 @@ public class GameDirector : MonoBehaviour
 
         if (isSet)
         {
-            StartCoroutine(giveDelay(1.5f));
             if (!isGameStart)
             {
                 this.guideText.GetComponent<Text>().text = "";
@@ -93,72 +95,64 @@ public class GameDirector : MonoBehaviour
             }
             else
             {
-                PlaceOmokStone(game.getCurrentTurn());
-                StartCoroutine(giveDelay(1.5f));
-
-            }
-        }
-
-    }
-
-    IEnumerator giveDelay(float delayTime)
-    {
-        float countTime = 0.0f;
-
-        while (countTime < delayTime)
-        {
-            countTime += Time.deltaTime;
-        }
-
-        yield return null;
-    }
-    
-    void setTimer(int currentTurn)
-    {
-        this.time = PlayerPrefs.GetFloat("Time");
-        if (this.time >= 0)
-        {
-            this.time -= Time.deltaTime;
-            this.timerText.GetComponent<Text>().text = this.time.ToString("F1");
-        }
-        else
-        {
-            if (currentTurn == 1)
-            {
-                this.guideText.GetComponent<Text>().text = "흑돌이 졌습니다.";
-            }
-            else
-            {
-                this.guideText.GetComponent<Text>().text = "백돌이 졌습니다.";
-            }
-        }
-    }
-    void PlaceOmokStone(int currentTurn)
-    {
-        if (Input.touchCount > 0)
-        {
-            Touch touch = Input.GetTouch(0);
-
-            if(touch.phase == TouchPhase.Ended)
-            {
-                List<ARRaycastHit> hits = new List<ARRaycastHit>();
-                if (raycastManager.Raycast(touch.position, hits, TrackableType.Planes))
+                if (this.setOmokStone)
                 {
-                    Pose hitPose = hits[0].pose;
-
-                    if (currentTurn == 1) // 현재 오목돌이 흰색이기 때문에, 검정색을 둘 차례 명시
+                    if(this.time >= 0.0f)
                     {
-                        Instantiate(OmokStoneBlack, hitPose.position, hitPose.rotation); // 검은돌 착수
+                        this.time -= Time.deltaTime;
+                        this.timerText.GetComponent<Text>().text = this.time.ToString("F1");
                     }
                     else
                     {
-                        Instantiate(OmokStoneWhite, hitPose.position, hitPose.rotation); // 흰돌 착수
+                        if (game.getCurrentTurn() == 0)
+                        {
+                            this.guideText.GetComponent<Text>().text = "백돌이 졌습니다.";
+                        }
+                        else
+                        {
+                            this.guideText.GetComponent<Text>().text = "흑돌이 졌습니다.";
+                        }
                     }
-                    Debug.Log("오목알이 생성된 위치 " + hitPose.position);
-                    setTimer(currentTurn);
-                    game.setCurrentTurn(currentTurn);
                 }
-            }   
+
+                if(Input.touchCount > 0)
+                {
+                    Touch touch = Input.GetTouch(0);
+                    
+                    List<ARRaycastHit> hits = new List<ARRaycastHit>();
+
+                    if (raycastManager.Raycast(touch.position, hits, TrackableType.Planes)) // 터치를 통해 object 생성반응이 있을 때
+                    {
+                        if (touch.phase == TouchPhase.Ended) // 손가락을 떼면
+                        {
+                            this.setOmokStone = false;
+                            int turn = game.getCurrentTurn();
+                            PlaceOmokStone(hits[0].pose, turn); // 오목알을 생성
+                            game.setCurrentTurn(turn);
+                        }
+                    }
+                }
+            }
         }
+
+    }
+    
+    void setTimer()
+    {
+        this.time = PlayerPrefs.GetFloat("Time");
+    }
+    void PlaceOmokStone(Pose hitPose, int currentTurn)
+    {
+        if (currentTurn == 1) // 현재 오목돌이 흰색이기 때문에, 검정색을 둘 차례 명시
+        {
+            Instantiate(OmokStoneBlack, hitPose.position, hitPose.rotation); // 검은돌 착수
+        }
+        else
+        {
+            Instantiate(OmokStoneWhite, hitPose.position, hitPose.rotation); // 흰돌 착수
+        }
+        Debug.Log("오목알 Position : ("+hitPose.position.x.ToString("F4")+ ","+hitPose.position.y.ToString("F4")+","+hitPose.position.z.ToString("F4")+")");
+        setTimer();
+        this.setOmokStone = true;
     }
 }

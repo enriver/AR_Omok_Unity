@@ -11,8 +11,7 @@ public class PlacementIndicator : MonoBehaviour
     private ARRaycastManager raycastManager;
     private GameObject indicator;
 
-    public GameObject OmokBoard;
-    GameObject spawnOmokBoard;
+    public GameObject OmokBoard;  
 
 
     // Start is called before the first frame update
@@ -45,20 +44,25 @@ public class PlacementIndicator : MonoBehaviour
 
                 if (!indicator.activeInHierarchy) indicator.SetActive(true); // Indicator 를 해당 포지션에 active함
 
-                if(Input.touchCount > 0) // 터치 이벤트가 발생했을 경우
+                if(Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended) // 터치 이벤트가 발생했으며, 손가락을 뗄 때 동작
                 {
                     // 오목판 생성
                     hitPose.rotation = Quaternion.Euler(-90, hitPose.rotation.y, hitPose.rotation.z);
-                    
-                    spawnOmokBoard = Instantiate(OmokBoard, hitPose.position, hitPose.rotation); // 오목판을 생성
-                    Debug.Log("오목판이 생성된 위치 "+hitPose.position);
-                    indicator.SetActive(false); // Indicator 삭제
-
                     this.isSet = true;
-                }
-                
+                    indicator.SetActive(false); // Indicator 삭제
+                    StartCoroutine(giveDelay(hitPose));
+                    
+                }                
             }
         }
+    }
+
+    IEnumerator giveDelay(Pose hitPose)
+    {
+        Instantiate(OmokBoard, hitPose.position, hitPose.rotation); // 오목판을 생성
+        Debug.Log("오목판 Position : (" + hitPose.position.x.ToString("F4") + "," + hitPose.position.y.ToString("F4") + "," + hitPose.position.z.ToString("F4") + ")");
+        yield return new WaitForSeconds(2.0f);
+        
     }
 }
 

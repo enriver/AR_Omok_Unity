@@ -15,5 +15,5 @@ AR_Omok/Assets/Scripts/*.meta
 AR_Omok/Assets/Font
 AR_Omok/Assets/StreamingAssets
 
-AR_Omok/AR_Omok-android.apk
+AR_Omok/*.apk
 AR_Omok/obj
