@@ -1,0 +1,15 @@
+AR_Omok/Library
+AR_Omok/Logs
+AR_Omok/Packages
+AR_Omok/ProjectSettings
+AR_Omok/UserSettings
+AR_Omok/.vsconfig
+AR_Omok/AR_Omok.sln
+AR_Omok/Assets/XR
+AR_Omok/Assets/Go
+AR_Omok/Assets/Prefabs
+AR_Omok/Assets/Scenes
+AR_Omok/AR_Omok-android.apk
+AR_Omok/obj
+AR_Omok/Assets/*.meta
+AR_Omok/Scripts/*.meta
