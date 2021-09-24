@@ -50,18 +50,18 @@ public class PlacementIndicator : MonoBehaviour
                     hitPose.rotation = Quaternion.Euler(-90, hitPose.rotation.y, hitPose.rotation.z);
                     this.isSet = true;
                     indicator.SetActive(false); // Indicator 삭제
-                    StartCoroutine(giveDelay(hitPose));
+                    StartCoroutine(SetOmokBoard(hitPose));
                     
                 }                
             }
         }
     }
 
-    IEnumerator giveDelay(Pose hitPose)
+    IEnumerator SetOmokBoard(Pose hitPose)
     {
         Instantiate(OmokBoard, hitPose.position, hitPose.rotation); // 오목판을 생성
         Debug.Log("오목판 Position : (" + hitPose.position.x.ToString("F4") + "," + hitPose.position.y.ToString("F4") + "," + hitPose.position.z.ToString("F4") + ")");
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSecondsRealtime(0.5f);
         
     }
 }

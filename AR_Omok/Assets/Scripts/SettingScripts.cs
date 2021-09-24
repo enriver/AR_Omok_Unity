@@ -23,7 +23,7 @@ public class SettingScripts : MonoBehaviour
     void Start()
     {
         // Setting Scene을 불러왔을 경우, 초기 상태를 로컬DB에서 꺼내와서 설정해주어야함
-        setTimer();
+        setTurnTime();
         setTimerSound();
         setOmokSound();
         setOmokVibe();
@@ -38,7 +38,7 @@ public class SettingScripts : MonoBehaviour
             SceneManager.LoadScene("MainScene");
         }
 
-        saveTime();
+        saveTurnTime();
 
         sld_timerSound.onValueChanged.AddListener(delegate { saveTimerSound(sld_timerSound.value); });
         sld_omokSound.onValueChanged.AddListener(delegate { saveOmokSound(sld_omokSound.value); });
@@ -52,7 +52,7 @@ public class SettingScripts : MonoBehaviour
     }
 
     // 로컬DB에 설정해 놓은 Timer 값을 불러와서 Toggle에 표시
-    void setTimer()
+    void setTurnTime()
     {
         this.time = PlayerPrefs.GetFloat("Time");
 
@@ -93,7 +93,7 @@ public class SettingScripts : MonoBehaviour
 
     }
 
-    void saveTime()
+    void saveTurnTime()
     {
         if (second30.isOn)
         {
