@@ -5,24 +5,24 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 
-public class PlacementIndicator : MonoBehaviour
+public class IndicatorScripts : MonoBehaviour
 {
     public bool isSet;
+
     private ARRaycastManager raycastManager;
-    private GameObject indicator;
-
-    public GameObject OmokBoard;  
-
+    private GameObject Indicator;
+    public GameObject OmokBoardPrefab;
 
     // Start is called before the first frame update
     void Start()
     {
         this.raycastManager = FindObjectOfType<ARRaycastManager>();
-        this.indicator = transform.GetChild(0).gameObject;
+        this.Indicator = transform.GetChild(0).gameObject;
+   
         this.isSet = false;
 
 
-        indicator.SetActive(false);
+        Indicator.SetActive(false);
     }
 
     // Update is called once per frame
@@ -42,27 +42,22 @@ public class PlacementIndicator : MonoBehaviour
                 transform.position = hitPose.position;
                 transform.rotation = hitPose.rotation;
 
-                if (!indicator.activeInHierarchy) indicator.SetActive(true); // Indicator 를 해당 포지션에 active함
+                if (!Indicator.activeInHierarchy) Indicator.SetActive(true); // Indicator 를 해당 포지션에 active함
 
                 if(Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended) // 터치 이벤트가 발생했으며, 손가락을 뗄 때 동작
                 {
-                    // 오목판 생성
-                    hitPose.rotation = Quaternion.Euler(-90, hitPose.rotation.y, hitPose.rotation.z);
+                    // 오목판 생성 -> Indicator 순환 방지
                     this.isSet = true;
-                    indicator.SetActive(false); // Indicator 삭제
-                    StartCoroutine(SetOmokBoard(hitPose));
-                    
+                    Destroy(Indicator);
+
+                    hitPose.position.y = Mathf.Round(hitPose.position.y * 1000) * 0.001f;
+                    hitPose.rotation = Quaternion.Euler(-90, hitPose.rotation.y, hitPose.rotation.z);
+
+                    Instantiate(OmokBoardPrefab, hitPose.position, hitPose.rotation);
+                    Debug.Log("오목판 Position : (" + hitPose.position.x+","+hitPose.position.y+","+hitPose.position.z+")");
                 }                
             }
         }
-    }
-
-    IEnumerator SetOmokBoard(Pose hitPose)
-    {
-        Instantiate(OmokBoard, hitPose.position, hitPose.rotation); // 오목판을 생성
-        Debug.Log("오목판 Position : (" + hitPose.position.x.ToString("F4") + "," + hitPose.position.y.ToString("F4") + "," + hitPose.position.z.ToString("F4") + ")");
-        yield return new WaitForSecondsRealtime(0.5f);
-        
     }
 }
 

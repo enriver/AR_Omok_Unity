@@ -48,9 +48,11 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\GameDirector.cs" />
-     <Compile Include="Assets\Scripts\PlacementIndicator.cs" />
+     <Compile Include="Assets\Scripts\IndicatorScripts.cs" />
      <Compile Include="Assets\Scripts\SettingScripts.cs" />
      <Compile Include="Assets\Scripts\MainScene.cs" />
+     <Compile Include="Assets\Scripts\StoneController.cs" />
+     <Compile Include="Assets\Scripts\OmokGameController.cs" />
      <None Include="Assets\Go\shaders\go_board.shader" />
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2020.3.16f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>

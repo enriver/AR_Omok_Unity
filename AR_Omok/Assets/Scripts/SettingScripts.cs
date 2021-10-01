@@ -54,7 +54,7 @@ public class SettingScripts : MonoBehaviour
     // 로컬DB에 설정해 놓은 Timer 값을 불러와서 Toggle에 표시
     void setTurnTime()
     {
-        this.time = PlayerPrefs.GetFloat("Time");
+        this.time = PlayerPrefs.GetFloat("TurnTime");
 
         if(this.time == 30.0f)
         {
@@ -107,7 +107,7 @@ public class SettingScripts : MonoBehaviour
             this.time = 60.0f;
         }
 
-        PlayerPrefs.SetFloat("Time", this.time);
+        PlayerPrefs.SetFloat("TurnTime", this.time);
     }
 
     public void saveTimerSound(float slider_value)

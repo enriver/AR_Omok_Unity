@@ -6,71 +6,43 @@ using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
-public class Omok {
-    int[,] board;
-    int currentTurn;
 
-        public Omok()
-    {
-        this.currentTurn = 1;
-        this.board = new int[9,9] { {0,0,0,0,0,0,0,0,0},
-                                    {0,0,0,0,0,0,0,0,0},
-                                    {0,0,0,0,0,0,0,0,0},
-                                    {0,0,0,0,0,0,0,0,0},
-                                    {0,0,0,0,0,0,0,0,0},
-                                    {0,0,0,0,0,0,0,0,0},
-                                    {0,0,0,0,0,0,0,0,0},
-                                    {0,0,0,0,0,0,0,0,0},
-                                    {0,0,0,0,0,0,0,0,0}};
-    }
-    
-    public int getCurrentTurn()
-    {
-        return currentTurn;
-    }
-    public void setCurrentTurn(int turn)
-    {
-        if(turn == 1)
-        {
-            this.currentTurn = 0;
-        }
-        else
-        {
-            this.currentTurn = 1;
-        }
-    }
-
-}
 public class GameDirector : MonoBehaviour
 {
-    public GameObject guideText;
-    public GameObject timerText;
+    public GameObject GuideText;
+    public GameObject TimerText;
+    float TurnTime;
     
-    GameObject indicator;
-
-    float time;
-    bool isSet;
-    bool isGameStart;
-    bool setOmokStone;
-
+    GameObject Indicator;
+    GameObject OmokGameObj;
+    Omok OmokGame;
     private ARRaycastManager raycastManager;
-    public GameObject OmokStoneWhite;
-    public GameObject OmokStoneBlack;
+    List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
-    Omok game;
+    [SerializeField] private Camera arCamera;
 
+
+    bool isBoardSet; // 오목판 생성 여부
+    bool isGameStart; // 게임 시작 여부
+    bool setStone; // 오목알 착수 여부
+
+    public GameObject BlackStone;
+    public GameObject WhiteStone;
+    
     // Start is called before the first frame update
     void Start()
     {
-        this.guideText = GameObject.Find("GuideText");
-        this.timerText = GameObject.Find("Time");
-        this.indicator = GameObject.Find("PlaceIndicator");
+        this.GuideText = GameObject.Find("GuideText");
+        this.TimerText = GameObject.Find("Time");
+        this.Indicator = GameObject.Find("PlaceIndicator");
+        this.OmokGameObj = GameObject.Find("OmokGame");
 
-        this.time = PlayerPrefs.GetFloat("Time");
-        this.isSet = false;
+        this.TurnTime = PlayerPrefs.GetFloat("TurnTime");
+
+        this.isBoardSet = false;
         this.isGameStart = false;
-        this.setOmokStone = false;
- 
+        this.setStone = false;
+
         this.raycastManager = FindObjectOfType<ARRaycastManager>();
     }
 
@@ -81,78 +53,105 @@ public class GameDirector : MonoBehaviour
         {
             SceneManager.LoadScene("MainScene");
         }
-        // 오목판을 생성했는지 체크
-        isSet = this.indicator.GetComponent<PlacementIndicator>().isSet;
 
-        if (isSet)
+        // 오목판을 생성했는지 체크
+        if (isBoardSet)
         {
             if (!isGameStart)
             {
-                this.guideText.GetComponent<Text>().text = "";
-                game = new Omok();
-                Debug.Log("오목게임이 생성되었습니다");
+                this.GuideText.GetComponent<Text>().text = "오목 게임이 시작되었습니다.";
+                OmokGame = this.OmokGameObj.GetComponent<OmokGameController>().OmokGame;
                 isGameStart = true;
             }
             else
             {
-                if (this.setOmokStone)
+                if (this.setStone) // 오목알을 착수 하였는가
                 {
-                    if(this.time >= 0.0f)
+                    if(this.TurnTime >= 0.0f)
                     {
-                        this.time -= Time.deltaTime;
-                        this.timerText.GetComponent<Text>().text = this.time.ToString("F1");
+                        this.TurnTime -= Time.deltaTime;
+                        this.TimerText.GetComponent<Text>().text = this.TurnTime.ToString("F1");
                     }
                     else
                     {
-                        if (game.getCurrentTurn() == 0)
+                        // CurrentTurn 을 받아서 승패 여부 확인
+                        if (OmokGame.getCurrentTurn() == 0) this.GuideText.GetComponent<Text>().text = "백돌이 패배하였습니다.";
+                        else this.GuideText.GetComponent<Text>().text = "흑돌이 패배하였습니다.";
+                    }
+                }
+
+                if (Input.touchCount == 0) return;
+
+                Touch touch = Input.GetTouch(0);
+
+                if(touch.phase == TouchPhase.Ended)
+                {
+                    Ray ray;
+                    RaycastHit hitObj;
+
+                    ray = arCamera.ScreenPointToRay(touch.position);
+
+                    if(Physics.Raycast(ray,out hitObj))
+                    {
+                        if (hitObj.collider == null)
                         {
-                            this.guideText.GetComponent<Text>().text = "백돌이 졌습니다.";
+                            Debug.Log("아무것도 없넹");
+                            return;
                         }
                         else
                         {
-                            this.guideText.GetComponent<Text>().text = "흑돌이 졌습니다.";
+                            string OmokIndex=hitObj.collider.tag;
+                            Debug.Log("충돌 TAG : "+OmokIndex);
+                            if (raycastManager.Raycast(touch.position, hits, TrackableType.All))
+                            {
+                                int x = int.Parse(OmokIndex[5].ToString());
+                                int y = int.Parse(OmokIndex[6].ToString());
+                                Debug.Log("X :" + x + ", Y:" + y);
+
+                                if (OmokGame.board[x, y] == 0)
+                                {
+                                    this.setStone = false;
+                                    int turn = OmokGame.getCurrentTurn();
+
+                                    PlaceStone(hits[0].pose, turn);
+                                    OmokGame.board[x, y] = turn;
+
+                                    OmokGame.setCurrentTurn(turn);
+                                }
+                                else
+                                {
+                                    return;
+                                }
+                                
+                            }
                         }
                     }
                 }
+                
 
-                if(Input.touchCount > 0)
-                {
-                    Touch touch = Input.GetTouch(0);
-                    
-                    List<ARRaycastHit> hits = new List<ARRaycastHit>();
-
-                    if (raycastManager.Raycast(touch.position, hits, TrackableType.Planes)) // 터치를 통해 object 생성반응이 있을 때
-                    {
-                        if (touch.phase == TouchPhase.Ended) // 손가락을 떼면
-                        {
-                            this.setOmokStone = false;
-                            int turn = game.getCurrentTurn();
-                            PlaceOmokStone(hits[0].pose, turn); // 오목알을 생성
-                            game.setCurrentTurn(turn);
-                        }
-                    }
-                }
             }
-        }
-
-    }
-    
-    void setTimer()
-    {
-        this.time = PlayerPrefs.GetFloat("Time");
-    }
-    void PlaceOmokStone(Pose hitPose, int currentTurn)
-    {
-        if (currentTurn == 1) // 현재 오목돌이 흰색이기 때문에, 검정색을 둘 차례 명시
-        {
-            Instantiate(OmokStoneBlack, hitPose.position, hitPose.rotation); // 검은돌 착수
         }
         else
         {
-            Instantiate(OmokStoneWhite, hitPose.position, hitPose.rotation); // 흰돌 착수
+            isBoardSet = this.Indicator.GetComponent<IndicatorScripts>().isSet;
         }
-        Debug.Log("오목알 Position : ("+hitPose.position.x.ToString("F4")+ ","+hitPose.position.y.ToString("F4")+","+hitPose.position.z.ToString("F4")+")");
+
+    }
+
+    void setTimer()
+    {
+        this.TurnTime = PlayerPrefs.GetFloat("TurnTime");
+    }
+
+    void PlaceStone(Pose hitPose, int currentTurn)
+    {
+        hitPose.position.y = Mathf.Round(hitPose.position.y * 1000) * 0.001f;
+
+        if (currentTurn == 1) Instantiate(BlackStone, hitPose.position, hitPose.rotation);
+        else Instantiate(WhiteStone, hitPose.position, hitPose.rotation);
+
+        Debug.Log("오목알 Position : (" + hitPose.position.x + "," + hitPose.position.y + "," + hitPose.position.z + ")");
         setTimer();
-        this.setOmokStone = true;
+        this.setStone = false;
     }
 }

@@ -13,7 +13,7 @@ public class MainScene : MonoBehaviour
         if (!PlayerPrefs.HasKey("FirstConnect")){
 
             PlayerPrefs.SetInt("FirstConnect", 1); // 로컬 저장소에 처음 접근이 아니라는 것을 설정
-            PlayerPrefs.SetFloat("Time", 60.0f); // 초기 타이머 카운트를 60.0f 로 설정
+            PlayerPrefs.SetFloat("TurnTime", 60.0f); // 초기 타이머 카운트를 60.0f 로 설정
             PlayerPrefs.SetInt("TimerSound", 1); // 초기 타이머 사운드를 On 으로 설정
             PlayerPrefs.SetInt("OmokSound", 1); // 초기 오목알 사운드를 On 으로 설정
             PlayerPrefs.SetInt("OmokVibe", 1); // 초기 오목알 사운드를 On 으로 설정
