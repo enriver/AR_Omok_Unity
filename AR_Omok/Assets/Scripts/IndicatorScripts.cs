@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using UnityEngine.UI;
 
 
 public class IndicatorScripts : MonoBehaviour
 {
     public bool isSet;
+    
 
     private ARRaycastManager raycastManager;
     private GameObject Indicator;
+    public GameObject GuideText;
     public GameObject OmokBoardPrefab;
 
     // Start is called before the first frame update
@@ -20,6 +23,8 @@ public class IndicatorScripts : MonoBehaviour
         this.Indicator = transform.GetChild(0).gameObject;
    
         this.isSet = false;
+        
+        this.GuideText = GameObject.Find("GuideText");
 
 
         Indicator.SetActive(false);
@@ -37,6 +42,9 @@ public class IndicatorScripts : MonoBehaviour
             // 물체와의 충돌 인식 시 (화면의 지형지물을 인식했을 경우)
             if (hits.Count > 0)
             {
+
+                this.GuideText.GetComponent<Text>().text = "터치하여 오목판을 생성해주세요";
+
                 Pose hitPose = hits[0].pose;
 
                 transform.position = hitPose.position;
@@ -55,6 +63,7 @@ public class IndicatorScripts : MonoBehaviour
 
                     Instantiate(OmokBoardPrefab, hitPose.position, hitPose.rotation);
                     Debug.Log("오목판 Position : (" + hitPose.position.x+","+hitPose.position.y+","+hitPose.position.z+")");
+                    this.GuideText.GetComponent<Text>().text = "오목 게임이 시작되었습니다.";
                 }                
             }
         }
