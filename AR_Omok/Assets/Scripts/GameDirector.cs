@@ -31,6 +31,8 @@ public class GameDirector : MonoBehaviour
 
     public GameObject BlackStone;
     public GameObject WhiteStone;
+
+    List<string> tagNames = new List<string>();
     
     // Start is called before the first frame update
     void Start()
@@ -64,7 +66,8 @@ public class GameDirector : MonoBehaviour
         {
             if (!isGameStart)
             {
-                OmokGame = this.OmokGameObj.GetComponent<OmokGameController>().OmokGame;
+                OmokGame = new Omok();
+                //OmokGame = this.OmokGameObj.GetComponent<OmokGameController>().OmokGame;
                 isGameStart = true;
             }
             else
@@ -105,23 +108,52 @@ public class GameDirector : MonoBehaviour
                         else
                         {
                             string OmokIndex=hitObj.collider.tag;
+
+                            if (isContain(OmokIndex)) return;
                             Debug.Log("충돌 TAG : "+OmokIndex);
+
                             if (raycastManager.Raycast(touch.position, hits, TrackableType.Planes)) // 굳이 arRaycastManager 가 필요한가
                             {
                                 int x = int.Parse(OmokIndex[5].ToString());
                                 int y = int.Parse(OmokIndex[6].ToString());
-                                Debug.Log("X :" + x + ", Y:" + y);
+                                //Debug.Log("X :" + x + ", Y:" + y);
 
                                 if (OmokGame.board[x, y] == 0) // 빈 인덱스인가
                                 {
                                     this.setStone = false;
                                     int turn = OmokGame.getCurrentTurn();
 
+          
+                                    if(turn == 1)
+                                    {
+                                        if (OmokGame.isForbidden(x, y, turn))
+                                        {
+                                            this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "금수입니다";
+                                            return;
+                                        }
+                                    }
+                                    
+
+
                                     PlaceStone(hitObj.collider.transform.position, hitObj.collider.transform.rotation, turn);
+                                    tagNames.Add(OmokIndex);
                                     //PlaceStone(hits[0].pose, turn);
-                                    OmokGame.board[x, y] = turn;
+                                    OmokGame.setStone(x, y, turn);
+
+
+                                    // 오목인가
+                                    if (OmokGame.isGameOver(x, y,turn))
+                                    {
+                                        if(turn == 1) this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "흑돌 승리입니다";
+                                        else this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "백돌 승리입니다";
+
+                                        // 추후 팝업창 추가 고려
+
+                                        return;
+                                    }
 
                                     OmokGame.setCurrentTurn(turn);
+                                    //OmokGame.showBoard();
                                 }
                                 else
                                 {
@@ -187,8 +219,18 @@ public class GameDirector : MonoBehaviour
         }
 
         if (OmokVibe == 1) Handheld.Vibrate();
-        Debug.Log("오목알 Position : (" + hitPosition.x + "," + hitPosition.y + "," + hitPosition.z + ")");
+
+        //Debug.Log("오목알 Position : (" + hitPosition.x + "," + hitPosition.y + "," + hitPosition.z + ")");
         setTimer();
         this.setStone = true;
+    }
+
+    bool isContain(string tagName)
+    {
+        foreach(string tag in tagNames)
+        {
+            if (tag == tagName) return true;
+        }
+        return false;
     }
 }

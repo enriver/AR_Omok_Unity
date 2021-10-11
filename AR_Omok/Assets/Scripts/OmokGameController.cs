@@ -5,12 +5,14 @@ using UnityEngine;
 
 
 public class Omok {
+
     public int[,] board;
     private int currentTurn;
+    public RenjuRule renjuRule;
 
-        public Omok()
+    public Omok()
     {
-        this.currentTurn = 1;
+        this.currentTurn = 1; // 흑돌
         this.board = new int[9,9] { {0,0,0,0,0,0,0,0,0},
                                     {0,0,0,0,0,0,0,0,0},
                                     {0,0,0,0,0,0,0,0,0},
@@ -20,6 +22,8 @@ public class Omok {
                                     {0,0,0,0,0,0,0,0,0},
                                     {0,0,0,0,0,0,0,0,0},
                                     {0,0,0,0,0,0,0,0,0}};
+
+        this.renjuRule = new RenjuRule(this.board);
     }
     
     public int getCurrentTurn()
@@ -38,11 +42,44 @@ public class Omok {
         }
     }
 
+    public void setStone(int x, int y, int turn)
+    {
+        this.board[x, y] = turn;
+        this.renjuRule.setStone(x, y, turn);
+        
+    }
+    // 오목인가
+    public bool isGameOver(int x, int y, int turn)
+    {
+        if (this.renjuRule.isGameOver(x, y, turn)) return true;
+
+        return false;
+    }
+
+    // 금수체크
+    public bool isForbidden(int x, int y, int turn)
+    {
+        if (this.renjuRule.forbiddenPoint(x, y, turn)) return true;
+
+        return false;
+    }
+
+    public void showBoard()
+    {
+        for(int i=0; i<9; i++)
+        {
+            for(int j=0; j<9; j++)
+            {
+                if (this.board[i, j] != 0) Debug.Log(i + "-" + j);
+            }
+        }
+    }
+
 }
 
 public class OmokGameController : MonoBehaviour
 {
-    public Omok OmokGame = new Omok();
+    //public Omok OmokGame = new Omok();
     void Start()
     {
         

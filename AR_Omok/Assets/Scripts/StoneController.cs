@@ -16,8 +16,10 @@ public class StoneController : MonoBehaviour
         
     }
 
+    /*
     void OnTriggerEnter(Collider other)
     {
         Debug.Log("오목알 충돌감지 : "+other.gameObject.tag);
     }
+    */
 }
