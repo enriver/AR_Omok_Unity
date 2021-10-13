@@ -58,7 +58,7 @@ public class GameDirector : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            SceneManager.LoadScene("MainScene");
+            SceneManager.LoadScene("ModeScene");
         }
 
         // 오목판을 생성했는지 체크
@@ -220,7 +220,7 @@ public class GameDirector : MonoBehaviour
 
         if (OmokVibe == 1) Handheld.Vibrate();
 
-        //Debug.Log("오목알 Position : (" + hitPosition.x + "," + hitPosition.y + "," + hitPosition.z + ")");
+        Debug.Log("오목알 Position : (" + hitPosition.x + "," + hitPosition.y + "," + hitPosition.z + ")");
         setTimer();
         this.setStone = true;
     }

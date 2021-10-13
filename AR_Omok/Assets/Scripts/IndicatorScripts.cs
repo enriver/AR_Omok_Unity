@@ -16,6 +16,8 @@ public class IndicatorScripts : MonoBehaviour
     public GameObject GuideText;
     public GameObject OmokBoardPrefab;
 
+    public Vector3 boardSize;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -26,7 +28,7 @@ public class IndicatorScripts : MonoBehaviour
         
         this.GuideText = GameObject.Find("GuideText");
 
-
+        this.boardSize = OmokBoardPrefab.GetComponent<MeshRenderer>().bounds.size;
         Indicator.SetActive(false);
     }
 
@@ -63,6 +65,7 @@ public class IndicatorScripts : MonoBehaviour
 
                     Instantiate(OmokBoardPrefab, hitPose.position, hitPose.rotation);
                     Debug.Log("오목판 Position : (" + hitPose.position.x+","+hitPose.position.y+","+hitPose.position.z+")");
+                    Debug.Log("오목판 크기"+boardSize);
                     this.GuideText.GetComponent<Text>().text = "오목 게임이 시작되었습니다.";
                 }                
             }
