@@ -33,6 +33,7 @@ public class ModeScripts : MonoBehaviour
 
     public void StartAIMode()
     {
+        SceneManager.LoadScene("AIScene");
         Debug.Log("AI Mode 추가 예정");
     }
 

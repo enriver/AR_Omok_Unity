@@ -28,11 +28,15 @@ public class GameDirector : MonoBehaviour
     bool isBoardSet; // 오목판 생성 여부
     bool isGameStart; // 게임 시작 여부
     bool setStone; // 오목알 착수 여부
+    bool isEnd; // 게임이 끝났는지 여부
+    bool isForbidden; // 금수여부
 
     public GameObject BlackStone;
     public GameObject WhiteStone;
 
     List<string> tagNames = new List<string>();
+
+    public GameObject panel;
     
     // Start is called before the first frame update
     void Start()
@@ -49,8 +53,13 @@ public class GameDirector : MonoBehaviour
         this.isBoardSet = false;
         this.isGameStart = false;
         this.setStone = false;
+        this.isEnd = false;
+        this.isForbidden = false;
 
         this.raycastManager = FindObjectOfType<ARRaycastManager>();
+
+        this.panel = GameObject.Find("Panel");
+        this.panel.SetActive(false);
     }
 
     // 화면 떨림 방지
@@ -61,116 +70,143 @@ public class GameDirector : MonoBehaviour
             SceneManager.LoadScene("ModeScene");
         }
 
-        // 오목판을 생성했는지 체크
-        if (isBoardSet)
+        if (!this.isEnd)
         {
-            if (!isGameStart)
+            // 오목판을 생성했는지 체크
+            if (isBoardSet)
             {
-                OmokGame = new Omok();
-                //OmokGame = this.OmokGameObj.GetComponent<OmokGameController>().OmokGame;
-                isGameStart = true;
-            }
-            else
-            {
-                if (this.setStone) // 오목알을 착수 하였는가
+                if (!isGameStart)
                 {
-                    if(this.TurnTime >= 0.0f)
-                    {
-                        this.TurnTime -= Time.deltaTime;
-                        this.TimerText.GetComponent<Text>().text = this.TurnTime.ToString("F1");
-                    }
-                    else
-                    {
-                        // CurrentTurn 을 받아서 승패 여부 확인
-                        if (OmokGame.getCurrentTurn() == 0) this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "백돌이 패배하였습니다.";
-                        else this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "흑돌이 패배하였습니다.";
-                    }
+                    OmokGame = new Omok();
+                    //OmokGame = this.OmokGameObj.GetComponent<OmokGameController>().OmokGame;
+                    isGameStart = true;
                 }
-
-                if (Input.touchCount == 0) return; // 프레임 진행동안 터치가 없으면 return
-
-                Touch touch = Input.GetTouch(0);
-
-                if(touch.phase == TouchPhase.Ended) // 손가락을 떼는 이벤트 발생시
+                else
                 {
-                    Ray ray;
-                    RaycastHit hitObj;
-
-                    ray = arCamera.ScreenPointToRay(touch.position); // 손가락 포지션으로 부터 화면으로 raycast
-
-                    if(Physics.Raycast(ray,out hitObj)) // Object 충돌시
+                    if (this.setStone) // 오목알을 착수 하였는가
                     {
-                        if (hitObj.collider == null || hitObj.collider.tag == "Untagged") // collider 와 충돌 하였는가
+                        if(this.TurnTime >= 0.0f)
                         {
-                            Debug.Log("충돌한 Collider 가 없습니다");
-                            return;
+                            this.TurnTime -= Time.deltaTime;
+                            this.TimerText.GetComponent<Text>().text = this.TurnTime.ToString("F1");
                         }
                         else
                         {
-                            string OmokIndex=hitObj.collider.tag;
+                            this.panel.SetActive(true);
+                            this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "";
+                            this.TimerText.GetComponent<Text>().text = "";
 
-                            if (isContain(OmokIndex)) return;
-                            Debug.Log("충돌 TAG : "+OmokIndex);
+                            // CurrentTurn 을 받아서 승패 여부 확인
+                            if (OmokGame.getCurrentTurn() == 0) this.panel.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>().text = "백돌 승리입니다";
+                            else this.panel.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>().text = "흑돌 승리입니다";
+                        }
+                    }
 
-                            if (raycastManager.Raycast(touch.position, hits, TrackableType.Planes)) // 굳이 arRaycastManager 가 필요한가
+                    if (Input.touchCount == 0) return; // 프레임 진행동안 터치가 없으면 return
+
+                    Touch touch = Input.GetTouch(0);
+
+                    if(touch.phase == TouchPhase.Ended) // 손가락을 떼는 이벤트 발생시
+                    {
+                        Ray ray;
+                        RaycastHit hitObj;
+
+                        ray = arCamera.ScreenPointToRay(touch.position); // 손가락 포지션으로 부터 화면으로 raycast
+
+                        if(Physics.Raycast(ray,out hitObj)) // Object 충돌시
+                        {
+                            if (hitObj.collider == null || hitObj.collider.tag == "Untagged") // collider 와 충돌 하였는가
                             {
-                                int x = int.Parse(OmokIndex[5].ToString());
-                                int y = int.Parse(OmokIndex[6].ToString());
-                                //Debug.Log("X :" + x + ", Y:" + y);
+                                Debug.Log("충돌한 Collider 가 없습니다");
+                                return;
+                            }
+                            else
+                            {
+                                string OmokIndex=hitObj.collider.tag;
 
-                                if (OmokGame.board[x, y] == 0) // 빈 인덱스인가
+                                if (isContain(OmokIndex)) return;
+                                Debug.Log("충돌 TAG : "+OmokIndex);
+
+                                if (raycastManager.Raycast(touch.position, hits, TrackableType.Planes)) // 굳이 arRaycastManager 가 필요한가
                                 {
-                                    this.setStone = false;
-                                    int turn = OmokGame.getCurrentTurn();
+                                    int x = int.Parse(OmokIndex[5].ToString());
+                                    int y = int.Parse(OmokIndex[6].ToString());
+                                    //Debug.Log("X :" + x + ", Y:" + y);
+
+                                    if (OmokGame.board[x, y] == 0) // 빈 인덱스인가
+                                    {
+                                        this.setStone = false;
+                                        int turn = OmokGame.getCurrentTurn();
 
           
-                                    if(turn == 1)
-                                    {
-                                        if (OmokGame.isForbidden(x, y, turn))
+                                        if(turn == 1)
                                         {
-                                            this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "금수입니다";
-                                            return;
+                                            if (OmokGame.isForbidden(x, y, turn))
+                                            {
+                                                this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "금수입니다";
+                                                this.isForbidden = true;
+                                            }
+                                        }
+
+                                        if (!this.isForbidden)
+                                        {
+                                            PlaceStone(hitObj.collider.transform.position, hitObj.collider.transform.rotation, turn);
+                                            tagNames.Add(OmokIndex);
+                                            //PlaceStone(hits[0].pose, turn);
+                                            OmokGame.setStone(x, y, turn);
+
+
+                                            // 오목인가
+                                            if (OmokGame.isGameOver(x, y, turn))
+                                            {
+                                                this.isEnd = true;
+                                                this.panel.SetActive(true);
+                                                this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "";
+                                                this.TimerText.GetComponent<Text>().text = "";
+
+                                                if (turn == 1)
+                                                {
+
+                                                    this.panel.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>().text = "흑돌 승리입니다";
+                                                }
+
+                                                else
+                                                {
+                                                    this.panel.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>().text = "백돌 승리입니다";
+                                                }
+
+                                                // 추후 팝업창 추가 고려
+
+                                                return;
+                                            }
+                                            else
+                                            {
+                                                OmokGame.setCurrentTurn(turn);
+                                            }
+                                            //OmokGame.showBoard();
+                                        }
+                                        else
+                                        {
+                                            this.isForbidden = false;
                                         }
                                     }
-                                    
-
-
-                                    PlaceStone(hitObj.collider.transform.position, hitObj.collider.transform.rotation, turn);
-                                    tagNames.Add(OmokIndex);
-                                    //PlaceStone(hits[0].pose, turn);
-                                    OmokGame.setStone(x, y, turn);
-
-
-                                    // 오목인가
-                                    if (OmokGame.isGameOver(x, y,turn))
+                                    else
                                     {
-                                        if(turn == 1) this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "흑돌 승리입니다";
-                                        else this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "백돌 승리입니다";
-
-                                        // 추후 팝업창 추가 고려
-
                                         return;
                                     }
-
-                                    OmokGame.setCurrentTurn(turn);
-                                    //OmokGame.showBoard();
-                                }
-                                else
-                                {
-                                    return;
-                                }
                                 
+                                }
                             }
                         }
                     }
-                }
                 
 
+                }
             }
-        }
-        else
-        {
-            isBoardSet = this.Indicator.GetComponent<IndicatorScripts>().isSet;
+            else
+            {
+                isBoardSet = this.Indicator.GetComponent<IndicatorScripts>().isSet;
+            }
         }
 
     }
@@ -232,5 +268,10 @@ public class GameDirector : MonoBehaviour
             if (tag == tagName) return true;
         }
         return false;
+    }
+
+    public void moveMainScene()
+    {
+        SceneManager.LoadScene("ModeScene");
     }
 }

@@ -51,6 +51,8 @@ public class RenjuRule {
             }
         }
 
+        //Debug.Log("현재 턴 : "+currentTurn+", 돌의 갯수 : "+count);
+
         return count;
     }
 
