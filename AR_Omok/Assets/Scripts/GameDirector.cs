@@ -115,8 +115,8 @@ public class GameDirector : MonoBehaviour
                             this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "";
                             this.TimerText.GetComponent<Text>().text = "";
                             this.TurnText.GetComponent<Text>().text = "";
-                            
-                            
+
+                            this.UnderFive.GetComponent<AudioSource>().Stop();
 
                             // CurrentTurn 을 받아서 승패 여부 확인
                             if (OmokGame.getCurrentTurn() == 0) this.panel.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>().text = "백돌 승리입니다";
@@ -188,6 +188,7 @@ public class GameDirector : MonoBehaviour
                                                 this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "";
                                                 this.TimerText.GetComponent<Text>().text = "";
                                                 this.TurnText.GetComponent<Text>().text = "";
+                                                this.UnderFive.GetComponent<AudioSource>().Stop();
 
                                                 if (turn == 1)
                                                 {
