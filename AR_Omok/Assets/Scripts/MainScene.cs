@@ -49,7 +49,7 @@ public class MainScene : MonoBehaviour
 
     public void MoveGameScene()
     {
-        SceneManager.LoadScene("ModeScene");
+        SceneManager.LoadScene("ArScene");
     }
     public void MoveRuleScene()
     {

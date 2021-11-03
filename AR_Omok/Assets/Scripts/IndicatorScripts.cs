@@ -14,6 +14,8 @@ public class IndicatorScripts : MonoBehaviour
     private ARRaycastManager raycastManager;
     private GameObject Indicator;
     public GameObject GuideText;
+    
+
     public GameObject OmokBoardPrefab;
 
     public Vector3 boardSize;
@@ -44,7 +46,7 @@ public class IndicatorScripts : MonoBehaviour
             // 물체와의 충돌 인식 시 (화면의 지형지물을 인식했을 경우)
             if (hits.Count > 0)
             {
-
+                
                 this.GuideText.GetComponent<Text>().text = "터치하여 오목판을 생성해주세요";
 
                 Pose hitPose = hits[0].pose;
@@ -67,6 +69,7 @@ public class IndicatorScripts : MonoBehaviour
                     Debug.Log("오목판 Position : (" + hitPose.position.x+","+hitPose.position.y+","+hitPose.position.z+")");
                     Debug.Log("오목판 크기"+boardSize);
                     this.GuideText.GetComponent<Text>().text = "오목 게임이 시작되었습니다.";
+                    
                 }                
             }
         }

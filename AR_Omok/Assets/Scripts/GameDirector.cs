@@ -10,13 +10,17 @@ using UnityEngine.XR.ARSubsystems;
 public class GameDirector : MonoBehaviour
 {
     public GameObject TimerText;
+    public GameObject TurnText;
+
     float TurnTime;
+    int TimerSound;
     int OmokSound;
     int OmokVibe;
     
     GameObject Indicator;
-    GameObject OmokGameObj;
     AudioSource audioSource;
+
+    public GameObject UnderFive;
 
     Omok OmokGame;
     private ARRaycastManager raycastManager;
@@ -30,6 +34,7 @@ public class GameDirector : MonoBehaviour
     bool setStone; // 오목알 착수 여부
     bool isEnd; // 게임이 끝났는지 여부
     bool isForbidden; // 금수여부
+    bool isUnderFive; // 5초 이내 인가
 
     public GameObject BlackStone;
     public GameObject WhiteStone;
@@ -41,12 +46,15 @@ public class GameDirector : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        this.TimerText = GameObject.Find("TimerText");
         this.Indicator = GameObject.Find("PlaceIndicator");
-        this.OmokGameObj = GameObject.Find("OmokGame");
-        this.audioSource = GetComponent<AudioSource>(); 
+        this.TimerText = GameObject.Find("TimerText");
+        this.TurnText = GameObject.Find("TurnText");
+        
+        this.audioSource = GetComponent<AudioSource>();
+        this.UnderFive = GameObject.Find("UnderFive");
 
         this.TurnTime = PlayerPrefs.GetFloat("TurnTime");
+        this.TimerSound = PlayerPrefs.GetInt("TimerSound");
         this.OmokSound = PlayerPrefs.GetInt("OmokSound");
         this.OmokVibe = PlayerPrefs.GetInt("OmokVibe");
 
@@ -55,6 +63,7 @@ public class GameDirector : MonoBehaviour
         this.setStone = false;
         this.isEnd = false;
         this.isForbidden = false;
+        this.isUnderFive = false;
 
         this.raycastManager = FindObjectOfType<ARRaycastManager>();
 
@@ -67,7 +76,7 @@ public class GameDirector : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            SceneManager.LoadScene("ModeScene");
+            SceneManager.LoadScene("MainScene");
         }
 
         if (!this.isEnd)
@@ -89,12 +98,25 @@ public class GameDirector : MonoBehaviour
                         {
                             this.TurnTime -= Time.deltaTime;
                             this.TimerText.GetComponent<Text>().text = this.TurnTime.ToString("F1");
+
+                            if (this.TimerSound==1)
+                            {
+                                if (this.isUnderFive == false && this.TurnTime <= 5.0f)
+                                {
+                                    this.isUnderFive = true;
+                                    this.UnderFive.GetComponent<AudioSource>().Play();
+
+                                }
+                            }   
                         }
                         else
                         {
                             this.panel.SetActive(true);
                             this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "";
                             this.TimerText.GetComponent<Text>().text = "";
+                            this.TurnText.GetComponent<Text>().text = "";
+                            
+                            
 
                             // CurrentTurn 을 받아서 승패 여부 확인
                             if (OmokGame.getCurrentTurn() == 0) this.panel.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>().text = "백돌 승리입니다";
@@ -135,7 +157,6 @@ public class GameDirector : MonoBehaviour
 
                                     if (OmokGame.board[x, y] == 0) // 빈 인덱스인가
                                     {
-                                        this.setStone = false;
                                         int turn = OmokGame.getCurrentTurn();
 
           
@@ -143,6 +164,7 @@ public class GameDirector : MonoBehaviour
                                         {
                                             if (OmokGame.isForbidden(x, y, turn))
                                             {
+                                                
                                                 this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "금수입니다";
                                                 this.isForbidden = true;
                                             }
@@ -150,6 +172,7 @@ public class GameDirector : MonoBehaviour
 
                                         if (!this.isForbidden)
                                         {
+                                            this.setStone = false;
                                             PlaceStone(hitObj.collider.transform.position, hitObj.collider.transform.rotation, turn);
                                             tagNames.Add(OmokIndex);
                                             //PlaceStone(hits[0].pose, turn);
@@ -161,8 +184,10 @@ public class GameDirector : MonoBehaviour
                                             {
                                                 this.isEnd = true;
                                                 this.panel.SetActive(true);
+                                                
                                                 this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "";
                                                 this.TimerText.GetComponent<Text>().text = "";
+                                                this.TurnText.GetComponent<Text>().text = "";
 
                                                 if (turn == 1)
                                                 {
@@ -174,8 +199,6 @@ public class GameDirector : MonoBehaviour
                                                 {
                                                     this.panel.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>().text = "백돌 승리입니다";
                                                 }
-
-                                                // 추후 팝업창 추가 고려
 
                                                 return;
                                             }
@@ -246,15 +269,21 @@ public class GameDirector : MonoBehaviour
         if (currentTurn == 1)
         { 
             Instantiate(BlackStone, hitPosition, hitRotation);
-            this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "백돌 차례입니다";
+            //this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "○ 백돌 차례 입니다";
+            this.TurnText.GetComponent<Text>().text = "○ 백돌 차례";
+
         }
         else
         {
             Instantiate(WhiteStone, hitPosition, hitRotation);
-            this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "흑돌 차례입니다";
+            //this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "● 흑돌 차례 입니다";
+            this.TurnText.GetComponent<Text>().text = "● 흑돌 차례";
         }
-
-        if (OmokVibe == 1) Handheld.Vibrate();
+        
+        this.Indicator.GetComponent<IndicatorScripts>().GuideText.GetComponent<Text>().text = "제한시간 안에 착수하여 주세요";
+        this.isUnderFive = false;
+        this.UnderFive.GetComponent<AudioSource>().Stop();
+        // if (OmokVibe == 1) Handheld.Vibrate();
 
         Debug.Log("오목알 Position : (" + hitPosition.x + "," + hitPosition.y + "," + hitPosition.z + ")");
         setTimer();
@@ -272,6 +301,6 @@ public class GameDirector : MonoBehaviour
 
     public void moveMainScene()
     {
-        SceneManager.LoadScene("ModeScene");
+        SceneManager.LoadScene("MainScene");
     }
 }

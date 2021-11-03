@@ -55,13 +55,12 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\OmokGameController.cs" />
     <Compile Include="Assets\Scripts\StoneController.cs" />
+    <Compile Include="Assets\Scripts\clientScripts.cs" />
     <Compile Include="Assets\Scripts\GameDirector.cs" />
     <Compile Include="Assets\Scripts\IndicatorScripts.cs" />
     <Compile Include="Assets\Scripts\ModeScripts.cs" />
     <Compile Include="Assets\Scripts\SettingScripts.cs" />
     <Compile Include="Assets\Scripts\MainScene.cs" />
-    <Compile Include="Assets\Scripts\RenjuRuleScripts.cs" />
-    <Compile Include="Assets\Scripts\clientScripts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Go\shaders\go_board.shader" />

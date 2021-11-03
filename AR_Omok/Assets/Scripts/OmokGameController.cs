@@ -295,7 +295,7 @@ public class Omok {
     {
         if (isFive(x, y, currentTurn)) return false;
         else if (isSix(x, y, currentTurn)) return true;
-        //else if (doubleThree(x, y, currentTurn) || doubleFour(x, y, currentTurn)) return true;
+        else if (doubleThree(x, y, currentTurn) || doubleFour(x, y, currentTurn)) return true;
 
         return false;
     }
