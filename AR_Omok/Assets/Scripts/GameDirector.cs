@@ -42,6 +42,10 @@ public class GameDirector : MonoBehaviour
     List<string> tagNames = new List<string>();
 
     public GameObject panel;
+    public GameObject blackStone;
+    public GameObject whiteStone;
+
+    int num;
     
     // Start is called before the first frame update
     void Start()
@@ -69,6 +73,8 @@ public class GameDirector : MonoBehaviour
 
         this.panel = GameObject.Find("Panel");
         this.panel.SetActive(false);
+
+        this.num = 1;
     }
 
     // 화면 떨림 방지
@@ -177,6 +183,7 @@ public class GameDirector : MonoBehaviour
                                             tagNames.Add(OmokIndex);
                                             //PlaceStone(hits[0].pose, turn);
                                             OmokGame.setStone(x, y, turn);
+                                            Board2D(x, y, turn);
 
 
                                             // 오목인가
@@ -223,8 +230,6 @@ public class GameDirector : MonoBehaviour
                             }
                         }
                     }
-                
-
                 }
             }
             else
@@ -303,5 +308,29 @@ public class GameDirector : MonoBehaviour
     public void moveMainScene()
     {
         SceneManager.LoadScene("MainScene");
+    }
+
+    public void Board2D(int x, int y, int currentTurn)
+    {
+        int[] posX =new int[] { -480, -360, -240, -120, 0, 120, 240, 360, 480 };
+        int[] posY =new int[] { -480, -360, -240, -120, 0, 120, 240, 360, 480 };
+
+        var parent = this.panel.transform.GetChild(0).transform.GetChild(2);
+        if (currentTurn == 1)
+        {
+            GameObject blackStones = Instantiate(blackStone) as GameObject;
+            blackStones.transform.GetChild(0).GetComponent<Text>().text = this.num.ToString();
+            GameObject.Instantiate(blackStones, new Vector3(posX[x]+545, posY[y]+1030, 0), Quaternion.identity).transform.parent = parent.transform;
+            
+        }
+        else
+        {
+            GameObject whiteStones = Instantiate(whiteStone) as GameObject;
+            whiteStones.transform.GetChild(0).GetComponent<Text>().text = this.num.ToString();
+            GameObject.Instantiate(whiteStones, new Vector3(posX[x]+545, posY[y]+1030, 0), Quaternion.identity).transform.parent = parent.transform;
+        }
+
+        this.num += 1;
+
     }
 }

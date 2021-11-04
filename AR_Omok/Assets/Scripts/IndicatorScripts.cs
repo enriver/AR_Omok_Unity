@@ -63,7 +63,8 @@ public class IndicatorScripts : MonoBehaviour
                     Destroy(Indicator);
 
                     hitPose.position.y = Mathf.Round(hitPose.position.y * 1000) * 0.001f;
-                    hitPose.rotation = Quaternion.Euler(-90, hitPose.rotation.y, hitPose.rotation.z);
+                    //hitPose.rotation = Quaternion.Euler(-90, hitPose.rotation.y, hitPose.rotation.z);
+                    hitPose.rotation = Quaternion.Euler(-90, hitPose.rotation.y, -90);
 
                     Instantiate(OmokBoardPrefab, hitPose.position, hitPose.rotation);
                     Debug.Log("ø¿∏Ò∆« Position : (" + hitPose.position.x+","+hitPose.position.y+","+hitPose.position.z+")");
